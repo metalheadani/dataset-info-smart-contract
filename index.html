@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>File Info</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script src="./web3.js/dist/web3.min.js"></script>
+
+</head>
+<body>
+    <div class="container">
+
+        <h1>Sellers' Point</h1>
+
+        <h2 id="seller"></h2>
+
+        <img id="loader" src="https://loading.io/spinners/double-ring/lg.double-ring-spinner.gif">
+
+        <label for="name" class="col-lg-2 control-label">Seller Address</label>
+        <input id="address" type="text">
+
+
+        <label for="name" class="col-lg-2 control-label">Product Name</label>
+        <input id="name" type="text">
+
+        <label for="name" class="col-lg-2 control-label">Descrition</label>
+        <input id="description" type="text">
+
+        <label for="name" class="col-lg-2 control-label">Price</label>
+        <input id="price" type="text">
+
+        <button id="button">Add File</button>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+    <script>
+        //Web3 = require('web3');
+        if (typeof web3 !== 'undefined') {
+        web3 = new Web3(web3.currentProvider);
+        } else {
+        // set the provider you want from Web3.providers
+        web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8887"));
+        }
+
+        web3.eth.defaultAccount = web3.eth.accounts[0];
+
+        var fileContract = web3.eth.contract([
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "description",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "name": "price",
+                "type": "uint256"
+            }
+        ],
+        "name": "files",
+        "type": "event"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_seller",
+                "type": "address"
+            },
+            {
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "name": "description",
+                "type": "string"
+            },
+            {
+                "name": "price",
+                "type": "uint256"
+            }
+        ],
+        "name": "setFileInfo",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "fileinfos",
+        "outputs": [
+            {
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "name": "description",
+                "type": "string"
+            },
+            {
+                "name": "price",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_seller",
+                "type": "address"
+            }
+        ],
+        "name": "getFileInfo",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            },
+            {
+                "name": "",
+                "type": "string"
+            },
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "seller",
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    }
+]);
+        //var address = web3.eth.getBalance('0x88f87d8c32cdba2697079e55ffe046a03d9da12c'); //owner's address
+        var contractAddress = fileContract.at('0x2a60b1a522f92ec2f4d46e4e6e77e979f636c0bd');
+
+        console.log(contractAddress);
+
+        var filesEvent = contractAddress.files();
+
+        filesEvent.watch(function(error, result) {
+            if (!error){
+                $("#loader").hide();
+                $("#seller").html(result.args.address, result.args.name + result.args.description + result.args.price);
+            } else{
+                $("#loader").hide();
+                console.log(error);
+            }
+        });
+
+
+        $("#button").click(function(){
+            $("#loader").show();
+            contractAddress.setFileInfo($("#address").val(), $("#name").val(), $("#description").val(), $("#price").val(), (err, res) =>{
+                if (err){
+                    $("#loader").hide();
+                    console.log(err);
+                }
+            })
+
+        });
+
+
+    </script>
+
+</body>
+</html>
